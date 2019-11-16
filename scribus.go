@@ -2,8 +2,11 @@ package scribus
 
 import (
 	"encoding/xml"
+	"errors"
 	"io/ioutil"
 	"os"
+	"strconv"
+
 	"strings"
 )
 
@@ -621,6 +624,20 @@ type ScribusDocument struct {
 			PICART          string `xml:"PICART,attr"`
 			SCALETYPE       string `xml:"SCALETYPE,attr"`
 			RATIO           string `xml:"RATIO,attr"`
+			Pagenumber      string `xml:"Pagenumber,attr"`
+			PFILE           string `xml:"PFILE,attr"`
+			IRENDER         string `xml:"IRENDER,attr"`
+			EMBEDDED        string `xml:"EMBEDDED,attr"`
+			Path            string `xml:"path,attr"`
+			Copath          string `xml:"copath,attr"`
+			GXpos           string `xml:"gXpos,attr"`
+			GYpos           string `xml:"gYpos,attr"`
+			GWidth          string `xml:"gWidth,attr"`
+			GHeight         string `xml:"gHeight,attr"`
+			LAYER           string `xml:"LAYER,attr"`
+			NEXTITEM        string `xml:"NEXTITEM,attr"`
+			BACKITEM        string `xml:"BACKITEM,attr"`
+			PRFILE          string `xml:"PRFILE,attr"`
 			COLUMNS         string `xml:"COLUMNS,attr"`
 			COLGAP          string `xml:"COLGAP,attr"`
 			AUTOTEXT        string `xml:"AUTOTEXT,attr"`
@@ -634,16 +651,7 @@ type ScribusDocument struct {
 			BASEOF          string `xml:"BASEOF,attr"`
 			TextPathType    string `xml:"textPathType,attr"`
 			TextPathFlipped string `xml:"textPathFlipped,attr"`
-			Path            string `xml:"path,attr"`
-			Copath          string `xml:"copath,attr"`
-			GXpos           string `xml:"gXpos,attr"`
-			GYpos           string `xml:"gYpos,attr"`
-			GWidth          string `xml:"gWidth,attr"`
-			GHeight         string `xml:"gHeight,attr"`
 			PSTYLE          string `xml:"PSTYLE,attr"`
-			LAYER           string `xml:"LAYER,attr"`
-			NEXTITEM        string `xml:"NEXTITEM,attr"`
-			BACKITEM        string `xml:"BACKITEM,attr"`
 			StoryText       struct {
 				Text         string `xml:",chardata"`
 				DefaultStyle struct {
@@ -651,11 +659,20 @@ type ScribusDocument struct {
 					PARENT  string `xml:"PARENT,attr"`
 					CPARENT string `xml:"CPARENT,attr"`
 				} `xml:"DefaultStyle"`
-				ITEXT struct {
+				ITEXT []struct {
 					Text    string `xml:",chardata"`
 					CPARENT string `xml:"CPARENT,attr"`
 					CH      string `xml:"CH,attr"`
 				} `xml:"ITEXT"`
+				Para []struct {
+					Text                  string `xml:",chardata"`
+					ParagraphEffectOffset string `xml:"ParagraphEffectOffset,attr"`
+					ParagraphEffectIndent string `xml:"ParagraphEffectIndent,attr"`
+					DROP                  string `xml:"DROP,attr"`
+					Bullet                string `xml:"Bullet,attr"`
+					BulletStr             string `xml:"BulletStr,attr"`
+					Numeration            string `xml:"Numeration,attr"`
+				} `xml:"para"`
 				Trail string `xml:"trail"`
 			} `xml:"StoryText"`
 		} `xml:"PAGEOBJECT"`
@@ -664,7 +681,7 @@ type ScribusDocument struct {
 
 // readScribusFile reads an existing Scribus file from path and
 // returns ScribusDocument, error
-func newScribusDocumentFromFile(path string) (ScribusDocument, error) {
+func NewScribusDocumentFromFile(path string) (ScribusDocument, error) {
 	var scribusDocument ScribusDocument
 	xmlFile, err := os.Open(path)
 	if err != nil {
@@ -682,7 +699,7 @@ func newScribusDocumentFromFile(path string) (ScribusDocument, error) {
 }
 
 // writeScribusFile writes out a ScribusDocument to disk at path and returns error
-func (scribusDocument ScribusDocument) writeScribusFile(path string) error {
+func (scribusDocument ScribusDocument) WriteScribusFile(path string) error {
 	if xmlstring, err := xml.MarshalIndent(scribusDocument, "", "    "); err == nil {
 		xmlstring = []byte(xml.Header + strings.Replace(string(xmlstring), "&#xA;", "", -1)) // FIXME: https://forum.golangbridge.org/t/read-xml-change-values-write-back-crippled-file/16253/4
 		err = ioutil.WriteFile(path, xmlstring, 0644)
@@ -690,4 +707,57 @@ func (scribusDocument ScribusDocument) writeScribusFile(path string) error {
 	} else {
 		return err
 	}
+}
+
+// DuplicatePageObject copies a PAGEOBJECT on the page and inserts it after the i'th PAGEOBJECT,
+// returns error. The duplicated PAGEOBJECT will be at i+1
+func (scribusDocument *ScribusDocument) DuplicatePageObject(i int) error {
+	// Insert a copied PAGEOBJECT, https://stackoverflow.com/a/51311878
+	// Increase the slice scribusDocument.DOCUMENT.PAGEOBJECT by 1 (by copying a PAGEOBJECT)
+	scribusDocument.DOCUMENT.PAGEOBJECT = append(scribusDocument.DOCUMENT.PAGEOBJECT, scribusDocument.DOCUMENT.PAGEOBJECT[i])
+	// Move the objects thereafter, to make space for the object we want to insert
+	copy(scribusDocument.DOCUMENT.PAGEOBJECT[i+1:], scribusDocument.DOCUMENT.PAGEOBJECT[i:])
+	// Insert the object
+	scribusDocument.DOCUMENT.PAGEOBJECT[i+1] = scribusDocument.DOCUMENT.PAGEOBJECT[i]
+	return nil
+}
+
+// ChangeTextOfPageObject changes the text of the i'th PAGEOBJECT
+func (scribusDocument *ScribusDocument) ChangeTextOfPageObject(i int, text string) {
+	scribusDocument.DOCUMENT.PAGEOBJECT[i].StoryText.ITEXT[0].CH = text
+}
+
+// MovePageObject moves the i'th PAGEOBJECT to the supplied x and y position
+func (scribusDocument *ScribusDocument) MovePageObject(i int, xpos int, ypos int) {
+	scribusDocument.DOCUMENT.PAGEOBJECT[i].XPOS = strconv.Itoa(xpos)
+	scribusDocument.DOCUMENT.PAGEOBJECT[i].YPOS = strconv.Itoa(ypos)
+}
+
+// TODO: ChangeBulletPointsOfPageObject changes the bullet points of the i'th PAGEOBJECT
+// to the contents of a []string
+// We should probably read the first para tag in a StoryText tag that has a BulletStr property, and copy that
+func (scribusDocument *ScribusDocument) ChangeBulletPointsOfPageObject(i int, text string) {
+	_ = `
+            <StoryText>
+                <DefaultStyle PARENT="Default Paragraph Style"/>
+                <ITEXT CPARENT="Default Character Style" FONT="FreeSans Regular" CH="one"/>
+                <para ParagraphEffectCharStyle="" ParagraphEffectOffset="14.1732283464567" ParagraphEffectIndent="1" DROP="0" Bullet="1" BulletStr="■" Numeration="0" NumerationFormat="0" NumerationName="&lt;local block&gt;" NumerationLevel="0" NumerationPrefix="" NumerationSuffix="." NumerationStart="1" NumerationHigher="1"/>
+                <ITEXT CPARENT="Default Character Style" FONT="FreeSans Regular" CH="two"/>
+                <para ParagraphEffectCharStyle="" ParagraphEffectOffset="14.1732283464567" ParagraphEffectIndent="1" DROP="0" Bullet="1" BulletStr="■" Numeration="0" NumerationFormat="0" NumerationName="&lt;local block&gt;" NumerationLevel="0" NumerationPrefix="" NumerationSuffix="." NumerationStart="1" NumerationHigher="1"/>
+                <ITEXT CPARENT="Default Character Style" FONT="FreeSans Regular" CH="three"/>
+                <para ParagraphEffectCharStyle="" ParagraphEffectOffset="14.1732283464567" ParagraphEffectIndent="1" DROP="0" Bullet="1" BulletStr="■" Numeration="0" NumerationFormat="0" NumerationName="&lt;local block&gt;" NumerationLevel="0" NumerationPrefix="" NumerationSuffix="." NumerationStart="1" NumerationHigher="1"/>
+            </StoryText>
+            `
+}
+
+// TODO: ChangePictureOfPageObject changes the picture of the i'th PAGEOBJECT
+// by changing its PFILE to path, returns error
+func (scribusDocument *ScribusDocument) ChangePictureOfPageObject(i int, path string) error {
+	// Assuming that a picture is PTYPE 2
+	if scribusDocument.DOCUMENT.PAGEOBJECT[i].PTYPE != "2" {
+		return errors.New("Is not a picture (assuming that a picture is PTYPE 2)")
+	}
+	// <PAGEOBJECT XPOS="213.75" YPOS="108.75" OwnPage="0" ItemID="99339472" PTYPE="2" WIDTH="191.25" HEIGHT="138" FRTYPE="0" CLIPEDIT="0" PWIDTH="1" PLINEART="1" LOCALSCX="0.75" LOCALSCY="0.75" LOCALX="0" LOCALY="0" LOCALROT="0" PICART="1" SCALETYPE="1" RATIO="1" Pagenumber="0" PFILE=".thumbnails/normal/0a2a7df1ad651aea66fd184c8cc4095f.png" IRENDER="0" EMBEDDED="0" path="M0 0 L191.25 0 L191.25 138 L0 138 L0 0 Z" copath="M0 0 L191.25 0 L191.25 138 L0 138 L0 0 Z" gXpos="213.75" gYpos="108.75" gWidth="0" gHeight="0" LAYER="0" NEXTITEM="-1" BACKITEM="-1"/>
+	scribusDocument.DOCUMENT.PAGEOBJECT[i].PFILE = path
+	return nil
 }
