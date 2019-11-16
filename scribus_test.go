@@ -9,6 +9,49 @@ import (
 	"testing"
 )
 
+func TestReadScribusFile(t *testing.T) {
+	scribusDocument, err := newScribusDocumentFromFile("Document-1.sla")
+	if err != nil {
+		t.Errorf("error: %v", err)
+	}
+
+	// Check if we got the correct version back
+	if scribusDocument.Version != "1.5.1.svn" {
+		t.Errorf("scribusDocument.Version was incorrect, got: %v, want: %v.", scribusDocument.Version, "1.5.1.svn")
+	}
+
+}
+
+func TestWriteScribusFile(t *testing.T) {
+	scribusDocument, err := newScribusDocumentFromFile("Document-1.sla")
+	if err != nil {
+		t.Errorf("error: %v", err)
+	}
+
+	testfile := "test.sla"
+	err = scribusDocument.writeScribusFile(testfile)
+	if err != nil {
+		t.Errorf("error: %v", err)
+	}
+
+	// Test if the written file exists
+	if _, err := os.Stat(testfile); os.IsNotExist(err) {
+		t.Errorf("error: %v does not exist", testfile)
+	}
+
+	// Test if we can read the written file
+	scribusDocument, err = newScribusDocumentFromFile(testfile)
+	if err != nil {
+		t.Errorf("error: %v", err)
+	}
+
+	// Check if we got the correct version back
+	if scribusDocument.Version != "1.5.1.svn" {
+		t.Errorf("scribusDocument.Version was incorrect, got: %v, want: %v.", scribusDocument.Version, "1.5.1.svn")
+	}
+
+}
+
 func TestEditScribusDocumentLowLevel(t *testing.T) {
 
 	// Read in test Scribus file
@@ -19,14 +62,11 @@ func TestEditScribusDocumentLowLevel(t *testing.T) {
 
 	defer xmlFile.Close()
 	byteValue, _ := ioutil.ReadAll(xmlFile)
-	var scribusDocument SCRIBUSUTF8NEW
+	var scribusDocument ScribusDocument
 	err = xml.Unmarshal(byteValue, &scribusDocument)
 	if err != nil {
 		t.Errorf("error: %v", err)
 	}
-
-	// Print information from the XML
-	t.Logf("Scribus version %v", scribusDocument.Version)
 
 	// Check if we got the correct version back
 	if scribusDocument.Version != "1.5.1.svn" {

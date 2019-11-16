@@ -2,12 +2,15 @@ package scribus
 
 import (
 	"encoding/xml"
+	"io/ioutil"
+	"os"
+	"strings"
 )
 
 // https://wiki.scribus.net/canvas/File_Format_Specification_for_Scribus_1.5
 // Struct generated using an example Scribus document with https://www.onlinetool.io/xmltogo/
 // TODO: Improve completeness
-type SCRIBUSUTF8NEW struct {
+type ScribusDocument struct {
 	XMLName  xml.Name `xml:"SCRIBUSUTF8NEW"`
 	Text     string   `xml:",chardata"`
 	Version  string   `xml:"Version,attr"`
@@ -657,4 +660,34 @@ type SCRIBUSUTF8NEW struct {
 			} `xml:"StoryText"`
 		} `xml:"PAGEOBJECT"`
 	} `xml:"DOCUMENT"`
+}
+
+// readScribusFile reads an existing Scribus file from path and
+// returns ScribusDocument, error
+func newScribusDocumentFromFile(path string) (ScribusDocument, error) {
+	var scribusDocument ScribusDocument
+	xmlFile, err := os.Open(path)
+	if err != nil {
+		return scribusDocument, err
+	}
+
+	defer xmlFile.Close()
+	byteValue, _ := ioutil.ReadAll(xmlFile)
+
+	err = xml.Unmarshal(byteValue, &scribusDocument)
+	if err != nil {
+		return scribusDocument, err
+	}
+	return scribusDocument, nil
+}
+
+// writeScribusFile writes out a ScribusDocument to disk at path and returns error
+func (scribusDocument ScribusDocument) writeScribusFile(path string) error {
+	if xmlstring, err := xml.MarshalIndent(scribusDocument, "", "    "); err == nil {
+		xmlstring = []byte(xml.Header + strings.Replace(string(xmlstring), "&#xA;", "", -1)) // FIXME: https://forum.golangbridge.org/t/read-xml-change-values-write-back-crippled-file/16253/4
+		err = ioutil.WriteFile(path, xmlstring, 0644)
+		return err
+	} else {
+		return err
+	}
 }
