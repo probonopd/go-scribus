@@ -1,6 +1,4 @@
-// Read a Scribus document and change text, then save output Scribus document
-// FIXME: This seems to cripple the XML file
-// It cannot be opened by Scribus anymore
+// Read a Scribus document and modify it, then save output Scribus document
 
 package main
 
@@ -9,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -686,11 +685,25 @@ func main() {
 	// Print information from the XML
 	fmt.Println("Scribus version", scribusDocument.Version)
 
-	// Print all page objects and change their text
+	// Print all page objects, copy them, and change their text
 	// See https://stackoverflow.com/a/28041994 for why to do it with "i"
 	for i := range scribusDocument.DOCUMENT.PAGEOBJECT {
 		fmt.Println("PAGEOBJECT", scribusDocument.DOCUMENT.PAGEOBJECT[i].StoryText.ITEXT.CH)
+		// Change its text
 		scribusDocument.DOCUMENT.PAGEOBJECT[i].StoryText.ITEXT.CH = "Changed"
+		// Insert a copied PAGEOBJECT, https://stackoverflow.com/a/51311878
+		// Increase the slice scribusDocument.DOCUMENT.PAGEOBJECT by 1 (by copying a PAGEOBJECT)
+		scribusDocument.DOCUMENT.PAGEOBJECT = append(scribusDocument.DOCUMENT.PAGEOBJECT, scribusDocument.DOCUMENT.PAGEOBJECT[i])
+		// Move the objects thereafter, to make space for the object we want to insert
+		copy(scribusDocument.DOCUMENT.PAGEOBJECT[i+1:], scribusDocument.DOCUMENT.PAGEOBJECT[i:])
+		// Insert the object
+		scribusDocument.DOCUMENT.PAGEOBJECT[i+1] = scribusDocument.DOCUMENT.PAGEOBJECT[i]
+		// Change its position on the page so that we can see it
+		oldxpos, _ := strconv.Atoi(scribusDocument.DOCUMENT.PAGEOBJECT[i+1].XPOS)
+		fmt.Println(oldxpos)
+		scribusDocument.DOCUMENT.PAGEOBJECT[i+1].XPOS = strconv.Itoa(oldxpos * 2)
+		// Change its text
+		scribusDocument.DOCUMENT.PAGEOBJECT[i+1].StoryText.ITEXT.CH = "Changed Copy"
 	}
 
 	// Write out changed file
