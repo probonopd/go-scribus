@@ -695,6 +695,11 @@ func main() {
 	// Write out changed file
 	// FIXME: This seems to cripple the XML file
 	// It cannot be opened by Scribus anymore
-	xmltext, _ := xml.MarshalIndent(scribusDocument, "", "    ")
-	_ = ioutil.WriteFile("test.xml", xmltext, 0644)
+
+	if xmlstring, err := xml.MarshalIndent(scribusDocument, "", "    "); err == nil {
+		xmlstring = []byte(xml.Header + string(xmlstring))
+		// fmt.Printf("%s\n", xmlstring)
+		_ = ioutil.WriteFile("test.xml", xmlstring, 0644)
+	}
+
 }
