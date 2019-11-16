@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 // https://wiki.scribus.net/canvas/File_Format_Specification_for_Scribus_1.5
@@ -693,13 +694,9 @@ func main() {
 	}
 
 	// Write out changed file
-	// FIXME: This seems to cripple the XML file
-	// It cannot be opened by Scribus anymore
-
 	if xmlstring, err := xml.MarshalIndent(scribusDocument, "", "    "); err == nil {
-		xmlstring = []byte(xml.Header + string(xmlstring))
-		// fmt.Printf("%s\n", xmlstring)
-		_ = ioutil.WriteFile("test.xml", xmlstring, 0644)
+		xmlstring = []byte(xml.Header + strings.Replace(string(xmlstring), "&#xA;", "", -1)) // FIXME: https://forum.golangbridge.org/t/read-xml-change-values-write-back-crippled-file/16253/4
+		_ = ioutil.WriteFile("Changed-Document-1.sla", xmlstring, 0644)
 	}
 
 }
