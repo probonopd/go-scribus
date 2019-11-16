@@ -722,9 +722,13 @@ func (scribusDocument *ScribusDocument) DuplicatePageObject(i int) error {
 	return nil
 }
 
-// ChangeTextOfPageObject changes the text of the i'th PAGEOBJECT
-func (scribusDocument *ScribusDocument) ChangeTextOfPageObject(i int, text string) {
+// ChangeTextOfPageObject changes the text of the i'th PAGEOBJECT, returns error
+func (scribusDocument *ScribusDocument) ChangeTextOfPageObject(i int, text string) error {
+	if scribusDocument.DOCUMENT.PAGEOBJECT[i].PTYPE != "1" {
+		return errors.New("Is not a text frame (assuming that a text frame is PTYPE 1)")
+	}
 	scribusDocument.DOCUMENT.PAGEOBJECT[i].StoryText.ITEXT[0].CH = text
+	return nil
 }
 
 // MovePageObject moves the i'th PAGEOBJECT to the supplied x and y position
@@ -732,6 +736,16 @@ func (scribusDocument *ScribusDocument) MovePageObject(i int, xpos int, ypos int
 	scribusDocument.DOCUMENT.PAGEOBJECT[i].XPOS = strconv.Itoa(xpos)
 	scribusDocument.DOCUMENT.PAGEOBJECT[i].YPOS = strconv.Itoa(ypos)
 }
+
+////////////
+// FIXME: I would like to attach methods to nested struct sub-structs, but unfortunately this does not work
+// For that I would need non-nested structs
+// syntax error: unexpected ., expecting comma or )
+// func (pageObject ScribusDocument.DOCUMENT.PAGEOBJECT) Move(i int, xpos int, ypos int) {
+// 	pageObject.XPOS = strconv.Itoa(xpos)
+// 	pageObject.YPOS = strconv.Itoa(ypos)
+// }
+////////////
 
 // TODO: ChangeBulletPointsOfPageObject changes the bullet points of the i'th PAGEOBJECT
 // to the contents of a []string
@@ -755,7 +769,7 @@ func (scribusDocument *ScribusDocument) ChangeBulletPointsOfPageObject(i int, te
 func (scribusDocument *ScribusDocument) ChangePictureOfPageObject(i int, path string) error {
 	// Assuming that a picture is PTYPE 2
 	if scribusDocument.DOCUMENT.PAGEOBJECT[i].PTYPE != "2" {
-		return errors.New("Is not a picture (assuming that a picture is PTYPE 2)")
+		return errors.New("Is not a picture frame (assuming that a picture frame is PTYPE 2)")
 	}
 	// <PAGEOBJECT XPOS="213.75" YPOS="108.75" OwnPage="0" ItemID="99339472" PTYPE="2" WIDTH="191.25" HEIGHT="138" FRTYPE="0" CLIPEDIT="0" PWIDTH="1" PLINEART="1" LOCALSCX="0.75" LOCALSCY="0.75" LOCALX="0" LOCALY="0" LOCALROT="0" PICART="1" SCALETYPE="1" RATIO="1" Pagenumber="0" PFILE=".thumbnails/normal/0a2a7df1ad651aea66fd184c8cc4095f.png" IRENDER="0" EMBEDDED="0" path="M0 0 L191.25 0 L191.25 138 L0 138 L0 0 Z" copath="M0 0 L191.25 0 L191.25 138 L0 138 L0 0 Z" gXpos="213.75" gYpos="108.75" gWidth="0" gHeight="0" LAYER="0" NEXTITEM="-1" BACKITEM="-1"/>
 	scribusDocument.DOCUMENT.PAGEOBJECT[i].PFILE = path

@@ -105,6 +105,10 @@ func TestEditScribusDocumentLowLevel(t *testing.T) {
 	// Print all page objects, copy them, and change their text
 	// See https://stackoverflow.com/a/28041994 for why to do it with "i"
 	for i := range scribusDocument.DOCUMENT.PAGEOBJECT {
+		// Do not go on with this PAGEOBJECT if it is not a text box but something else
+		if scribusDocument.DOCUMENT.PAGEOBJECT[0].PTYPE != "1" {
+			continue
+		}
 		t.Logf("PAGEOBJECT %v", scribusDocument.DOCUMENT.PAGEOBJECT[i].StoryText.ITEXT[0].CH)
 		// Change its text
 		scribusDocument.DOCUMENT.PAGEOBJECT[i].StoryText.ITEXT[0].CH = "Changed"
