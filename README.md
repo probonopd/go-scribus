@@ -1,3 +1,3 @@
 # scribus-go
 
-Read a Scribus document and change text, then save output Scribus document
+Read a Scribus document and modify it, then save output Scribus document
