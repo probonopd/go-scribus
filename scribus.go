@@ -10,6 +10,10 @@ import (
 
 // https://wiki.scribus.net/canvas/File_Format_Specification_for_Scribus_1.5
 // Struct generated using an example Scribus document following https://github.com/miku/zek/issues/14
+// Then manually decided which elements can occur multiple times, e.g., changed PAGEOBJECT to []PAGEOBJECT
+// in the DOCUMENT struct because one DOCUMENT can have multiple PAGEOBJECTs
+// FIXME: There must be a better, complete way to generate those structs from e.g., DTDs?
+
 // TODO: Improve completeness
 type ScribusDocument struct {
 	XMLName  xml.Name `xml:"SCRIBUSUTF8NEW"`
@@ -207,7 +211,7 @@ type DOCUMENT struct {
 	Sections                      Sections     `xml:"Sections"`
 	MASTERPAGE                    MASTERPAGE   `xml:"MASTERPAGE"`
 	PAGE                          PAGE         `xml:"PAGE"`
-	PAGEOBJECT                    PAGEOBJECT   `xml:"PAGEOBJECT"`
+	PAGEOBJECT                    []PAGEOBJECT `xml:"PAGEOBJECT"`
 }
 
 type CheckProfile struct {
@@ -741,6 +745,17 @@ func (scribusDocument ScribusDocument) WriteScribusFile(path string) error {
 	} else {
 		return err
 	}
+}
+
+func (doc DOCUMENT) GetPageObjectsWithText(text string) []*PAGEOBJECT {
+	var pos []*PAGEOBJECT
+	for i, _ := range doc.PAGEOBJECT {
+		if doc.PAGEOBJECT[i].StoryText.ITEXT.CH == text {
+			pos = append(pos, &doc.PAGEOBJECT[i])
+			return pos
+		}
+	}
+	return pos
 }
 
 // DuplicatePageObject copies a PAGEOBJECT on the page and inserts it after the i'th PAGEOBJECT,
