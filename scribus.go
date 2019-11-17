@@ -700,17 +700,20 @@ type Para struct {
 // currently we are getting all 'ITEXT's first and then all 'Para's when we write out
 // the changed XML, probably due to them being declared as []? How to fix this?
 type StoryText struct {
-	XMLName               xml.Name                `xml:"StoryText"`
-	Text                  string                  `xml:",chardata"`
-	DefaultStyle          DefaultStyle            `xml:"DefaultStyle"`
-	ITEXT                 []ITEXT                 `xml:"ITEXT"`
-	Para                  []Para                  `xml:"para"`
-	Trail                 string                  `xml:"trail"`
-	StoryTextMissingGroup []StoryTextMissingGroup `xml:"StoryTextMissingGroup"`
+	XMLName       xml.Name        `xml:"StoryText"`
+	Text          string          `xml:",chardata"`
+	DefaultStyle  DefaultStyle    `xml:"DefaultStyle"`
+	ITEXT         []ITEXT         `xml:"ITEXT"`
+	Para          []Para          `xml:"para"`
+	Trail         string          `xml:"trail"`
+	StoryTextSpan []StoryTextSpan `xml:"StoryTextSpan"`
 }
 
-// Working around the above by introducing a phantasy tag to group the elements inside
-type StoryTextMissingGroup struct {
+// FIXME: Working around the above by introducing a phantasy tag 'StoryTextSpan' to group the elements inside
+// Luckily Scribus can still open the file
+// https://gitlab.com/scribus/scribus/issues/8
+// TODO: If we want to parse files that contain this tag ourselves again, we also need to handle this case...
+type StoryTextSpan struct {
 	ITEXT ITEXT `xml:"ITEXT"`
 	Para  Para  `xml:"para"`
 }
@@ -807,17 +810,17 @@ func (st *StoryText) ChangeBulletPoints(texts []string) {
 	st.ITEXT = nil
 	st.Para = nil
 
-	var bulletGroups []StoryTextMissingGroup
+	var bulletGroups []StoryTextSpan
 
 	for _, text := range texts {
 		templateItext.CH = text
-		bulletGroup := StoryTextMissingGroup{
+		bulletGroup := StoryTextSpan{
 			ITEXT: templateItext,
 			Para:  templatePara,
 		}
 		bulletGroups = append(bulletGroups, bulletGroup)
 	}
-	st.StoryTextMissingGroup = bulletGroups
+	st.StoryTextSpan = bulletGroups
 }
 
 // TODO: ChangePictureOfPageObject changes the picture of the i'th PAGEOBJECT
