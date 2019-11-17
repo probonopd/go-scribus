@@ -26,15 +26,22 @@ func TestWriteScribusFile(t *testing.T) {
 		t.Errorf("error: %v", err)
 	}
 
-	// Make a small change in the document
+	// Make a simple text change
 	for _, po := range document.DOCUMENT.GetPageObjectsWithText("One") {
 		po.StoryText.ITEXT[0].CH = "Changed"
 		fmt.Println(po.StoryText.ITEXT[0].CH)
 	}
 
-	// Make a small change in the document
+	// Change some bullet points
 	for _, po := range document.DOCUMENT.GetPageObjectsWithText("Three") {
 		po.StoryText.ChangeBulletPoints([]string{"AAA", "BBB", "CCC"})
+	}
+
+	// Change a picture
+	for i := range document.DOCUMENT.PAGEOBJECT { // Need to use 'i' so that we can edit the original rather than a copy
+		if document.DOCUMENT.PAGEOBJECT[i].PTYPE == "2" { // Assuming that 2 means picture
+			document.DOCUMENT.PAGEOBJECT[i].PFILE = "/usr/share/icons/hicolor/16x16/apps/software-properties.png"
+		}
 	}
 
 	// Write back Scribus file
