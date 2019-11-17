@@ -12,7 +12,7 @@ func main() {
 		fmt.Println("Error", err)
 	}
 
-	for i, _ := range doc.DOCUMENT.PAGEOBJECT {
+	for i := range doc.DOCUMENT.PAGEOBJECT {
 		fmt.Println(doc.DOCUMENT.PAGEOBJECT[i].StoryText.ITEXT.CH)
 	}
 

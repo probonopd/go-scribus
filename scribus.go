@@ -12,10 +12,12 @@ import (
 // Struct generated using an example Scribus document following https://github.com/miku/zek/issues/14
 // Then manually decided which elements can occur multiple times, e.g., changed PAGEOBJECT to []PAGEOBJECT
 // in the DOCUMENT struct because one DOCUMENT can have multiple PAGEOBJECTs
+// Same for COLOR
+// FIXME: Probably many others as well
 // FIXME: There must be a better, complete way to generate those structs from e.g., DTDs?
 
 // TODO: Improve completeness
-type ScribusDocument struct {
+type Document struct {
 	XMLName  xml.Name `xml:"SCRIBUSUTF8NEW"`
 	Text     string   `xml:",chardata"`
 	Version  string   `xml:"Version,attr"`
@@ -194,7 +196,7 @@ type DOCUMENT struct {
 	CalligraphicPenWidth          string       `xml:"calligraphicPenWidth,attr"`
 	CalligraphicPenStyle          string       `xml:"calligraphicPenStyle,attr"`
 	CheckProfile                  CheckProfile `xml:"CheckProfile"`
-	COLOR                         COLOR        `xml:"COLOR"`
+	COLOR                         []COLOR      `xml:"COLOR"`
 	HYPHEN                        string       `xml:"HYPHEN"`
 	STYLE                         STYLE        `xml:"STYLE"`
 	CHARSTYLE                     CHARSTYLE    `xml:"CHARSTYLE"`
@@ -694,13 +696,23 @@ type Para struct {
 	Numeration            string   `xml:"Numeration,attr"`
 }
 
+// FIXME: The order of 'ITEXT' and 'Para' in the XML document must not be changed;
+// currently we are getting all 'ITEXT's first and then all 'Para's when we write out
+// the changed XML, probably due to them being declared as []? How to fix this?
 type StoryText struct {
-	XMLName      xml.Name     `xml:"StoryText"`
-	Text         string       `xml:",chardata"`
-	DefaultStyle DefaultStyle `xml:"DefaultStyle"`
-	ITEXT        ITEXT        `xml:"ITEXT"`
-	Para         Para         `xml:"para"`
-	Trail        string       `xml:"trail"`
+	XMLName               xml.Name                `xml:"StoryText"`
+	Text                  string                  `xml:",chardata"`
+	DefaultStyle          DefaultStyle            `xml:"DefaultStyle"`
+	ITEXT                 []ITEXT                 `xml:"ITEXT"`
+	Para                  []Para                  `xml:"para"`
+	Trail                 string                  `xml:"trail"`
+	StoryTextMissingGroup []StoryTextMissingGroup `xml:"StoryTextMissingGroup"`
+}
+
+// Working around the above by introducing a phantasy tag to group the elements inside
+type StoryTextMissingGroup struct {
+	ITEXT ITEXT `xml:"ITEXT"`
+	Para  Para  `xml:"para"`
 }
 
 type DefaultStyle struct {
@@ -719,8 +731,8 @@ type ITEXT struct {
 
 // readScribusFile reads an existing Scribus file from path and
 // returns ScribusDocument, error
-func NewScribusDocumentFromFile(path string) (ScribusDocument, error) {
-	var scribusDocument ScribusDocument
+func NewScribusDocumentFromFile(path string) (Document, error) {
+	var scribusDocument Document
 	xmlFile, err := os.Open(path)
 	if err != nil {
 		return scribusDocument, err
@@ -737,7 +749,7 @@ func NewScribusDocumentFromFile(path string) (ScribusDocument, error) {
 }
 
 // writeScribusFile writes out a ScribusDocument to disk at path and returns error
-func (scribusDocument ScribusDocument) WriteScribusFile(path string) error {
+func (scribusDocument Document) WriteScribusFile(path string) error {
 	if xmlstring, err := xml.MarshalIndent(scribusDocument, "", "    "); err == nil {
 		xmlstring = []byte(xml.Header + strings.Replace(string(xmlstring), "&#xA;", "", -1)) // FIXME: https://forum.golangbridge.org/t/read-xml-change-values-write-back-crippled-file/16253/4
 		err = ioutil.WriteFile(path, xmlstring, 0644)
@@ -747,28 +759,23 @@ func (scribusDocument ScribusDocument) WriteScribusFile(path string) error {
 	}
 }
 
+// ChangeText changes the text of an ITEXT
+func (itext *ITEXT) ChangeText(text string) {
+	itext.CH = text
+}
+
+// GetPageObjectsWithText returns pointers to the PAGEOBJECTs with the text in question
 func (doc DOCUMENT) GetPageObjectsWithText(text string) []*PAGEOBJECT {
 	var pos []*PAGEOBJECT
-	for i, _ := range doc.PAGEOBJECT {
-		if doc.PAGEOBJECT[i].StoryText.ITEXT.CH == text {
-			pos = append(pos, &doc.PAGEOBJECT[i])
-			return pos
+	for i := range doc.PAGEOBJECT {
+		for j := range doc.PAGEOBJECT[i].StoryText.ITEXT {
+			if doc.PAGEOBJECT[i].StoryText.ITEXT[j].CH == text {
+				pos = append(pos, &doc.PAGEOBJECT[i])
+				return pos
+			}
 		}
 	}
 	return pos
-}
-
-// DuplicatePageObject copies a PAGEOBJECT on the page and inserts it after the i'th PAGEOBJECT,
-// returns error. The duplicated PAGEOBJECT will be at i+1
-func (scribusDocument *ScribusDocument) xxxDuplicatePageObject(i int) error {
-
-	return nil
-}
-
-// ChangeTextOfPageObject changes the text of the i'th PAGEOBJECT, returns error
-func (itext *ITEXT) ChangeText(text string) error {
-	itext.CH = text
-	return nil
 }
 
 // MovePageObject moves the i'th PAGEOBJECT to the supplied x and y position
@@ -780,7 +787,7 @@ func (po *PAGEOBJECT) MovePageObject(i int, xpos int, ypos int) {
 // TODO: ChangeBulletPointsOfPageObject changes the bullet points of the i'th PAGEOBJECT
 // to the contents of a []string
 // We should probably read the first para tag in a StoryText tag that has a BulletStr property, and copy that
-func (scribusDocument *ScribusDocument) xxxChangeBulletPointsOfPageObject(i int, text string) {
+func (st *StoryText) ChangeBulletPoints(texts []string) {
 	_ = `
             <StoryText>
                 <DefaultStyle PARENT="Default Paragraph Style"/>
@@ -792,11 +799,30 @@ func (scribusDocument *ScribusDocument) xxxChangeBulletPointsOfPageObject(i int,
                 <para ParagraphEffectCharStyle="" ParagraphEffectOffset="14.1732283464567" ParagraphEffectIndent="1" DROP="0" Bullet="1" BulletStr="■" Numeration="0" NumerationFormat="0" NumerationName="&lt;local block&gt;" NumerationLevel="0" NumerationPrefix="" NumerationSuffix="." NumerationStart="1" NumerationHigher="1"/>
             </StoryText>
             `
+	// Get the first ITEXT and the first Para and use them as templates for the ones we are creating
+	templateItext := st.ITEXT[0]
+	templatePara := st.Para[0]
+
+	// Clear the pre-existing ITEXTs and PARAs
+	st.ITEXT = nil
+	st.Para = nil
+
+	var bulletGroups []StoryTextMissingGroup
+
+	for _, text := range texts {
+		templateItext.CH = text
+		bulletGroup := StoryTextMissingGroup{
+			ITEXT: templateItext,
+			Para:  templatePara,
+		}
+		bulletGroups = append(bulletGroups, bulletGroup)
+	}
+	st.StoryTextMissingGroup = bulletGroups
 }
 
 // TODO: ChangePictureOfPageObject changes the picture of the i'th PAGEOBJECT
 // by changing its PFILE to path, returns error
-func (scribusDocument *ScribusDocument) xxxChangePictureOfPageObject(i int, path string) error {
+func (scribusDocument *Document) xxxChangePictureOfPageObject(i int, path string) error {
 
 	return nil
 }
