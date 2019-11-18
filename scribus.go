@@ -733,6 +733,7 @@ type PAGEOBJECT struct {
 	HEIGHT            string       `xml:"HEIGHT,attr"`
 	FRTYPE            string       `xml:"FRTYPE,attr"`
 	CLIPEDIT          string       `xml:"CLIPEDIT,attr"`
+	ROT               string       `xml:"ROT,attr"`
 	PWIDTH            string       `xml:"PWIDTH,attr"`
 	PCOLOR            string       `xml:"PCOLOR,attr"`
 	PLINEART          string       `xml:"PLINEART,attr"`
