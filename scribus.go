@@ -829,8 +829,11 @@ type StoryText struct {
 // https://gitlab.com/scribus/scribus/issues/8
 // TODO: If we want to parse files that contain this tag ourselves again, we also need to handle this case...
 type StoryTextSpan struct {
-	ITEXT ITEXT `xml:"ITEXT"`
-	Para  Para  `xml:"para"`
+	Text         string       `xml:",chardata"`
+	DefaultStyle DefaultStyle `xml:"DefaultStyle"`
+	ITEXT        ITEXT        `xml:"ITEXT"`
+	Para         Para         `xml:"para"`
+	Trail        Trail        `xml:"trail"`
 }
 
 type DefaultStyle struct {
@@ -950,21 +953,11 @@ func (po *PAGEOBJECT) MovePageObject(i int, xpos int, ypos int) {
 	po.YPOS = strconv.Itoa(ypos)
 }
 
-// TODO: ChangeBulletPointsOfPageObject changes the bullet points of the i'th PAGEOBJECT
+// TODO: ChangeBulletPointsOfPageObject changes the bullet points of of the StoryText
 // to the contents of a []string
 // We should probably read the first para tag in a StoryText tag that has a BulletStr property, and copy that
 func (st *StoryText) ChangeBulletPoints(texts []string) {
-	_ = `
-            <StoryText>
-                <DefaultStyle PARENT="Default Paragraph Style"/>
-                <ITEXT CPARENT="Default Character Style" FONT="FreeSans Regular" CH="one"/>
-                <para ParagraphEffectCharStyle="" ParagraphEffectOffset="14.1732283464567" ParagraphEffectIndent="1" DROP="0" Bullet="1" BulletStr="■" Numeration="0" NumerationFormat="0" NumerationName="&lt;local block&gt;" NumerationLevel="0" NumerationPrefix="" NumerationSuffix="." NumerationStart="1" NumerationHigher="1"/>
-                <ITEXT CPARENT="Default Character Style" FONT="FreeSans Regular" CH="two"/>
-                <para ParagraphEffectCharStyle="" ParagraphEffectOffset="14.1732283464567" ParagraphEffectIndent="1" DROP="0" Bullet="1" BulletStr="■" Numeration="0" NumerationFormat="0" NumerationName="&lt;local block&gt;" NumerationLevel="0" NumerationPrefix="" NumerationSuffix="." NumerationStart="1" NumerationHigher="1"/>
-                <ITEXT CPARENT="Default Character Style" FONT="FreeSans Regular" CH="three"/>
-                <para ParagraphEffectCharStyle="" ParagraphEffectOffset="14.1732283464567" ParagraphEffectIndent="1" DROP="0" Bullet="1" BulletStr="■" Numeration="0" NumerationFormat="0" NumerationName="&lt;local block&gt;" NumerationLevel="0" NumerationPrefix="" NumerationSuffix="." NumerationStart="1" NumerationHigher="1"/>
-            </StoryText>
-            `
+
 	// Get the first ITEXT and the first Para and use them as templates for the ones we are creating
 
 	if len(st.ITEXT) < 1 {
@@ -989,6 +982,47 @@ func (st *StoryText) ChangeBulletPoints(texts []string) {
 		bulletGroup := StoryTextSpan{
 			ITEXT: templateItext,
 			Para:  templatePara,
+		}
+		bulletGroups = append(bulletGroups, bulletGroup)
+	}
+	st.StoryTextSpan = bulletGroups
+}
+
+// TODO: ChangeTextParagraphs changes the paragraphs of the StoryText
+// to the contents of a []string
+// Crude fix sets the line spacing on the para object (FIXME)
+// TODO: Be also able to do this without having
+// to supply new text
+func (st *StoryText) ChangeTextParagraphs(texts []string) {
+
+	templateDefaultStyle := st.DefaultStyle
+
+	if len(st.ITEXT) < 1 {
+		fmt.Println("CrudeFix: No ITEXT available")
+		return
+	}
+	templateItext := st.ITEXT[0]
+
+	templatePara := Para{}
+	templatePara.LINESP = templateDefaultStyle.LINESP // Magic; why is this needed?
+
+	templateTrail := st.Trail
+
+	// Clear the pre-existing ITEXTs and PARAs
+	st.DefaultStyle = DefaultStyle{}
+	st.ITEXT = nil
+	st.Para = nil
+	st.Trail = Trail{}
+
+	var bulletGroups []StoryTextSpan
+
+	for _, text := range texts {
+		templateItext.CH = text
+		bulletGroup := StoryTextSpan{
+			DefaultStyle: templateDefaultStyle,
+			ITEXT:        templateItext,
+			Para:         templatePara,
+			Trail:        templateTrail,
 		}
 		bulletGroups = append(bulletGroups, bulletGroup)
 	}
