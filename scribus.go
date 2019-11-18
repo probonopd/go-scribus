@@ -317,6 +317,8 @@ type COLOR struct {
 	Register string   `xml:"Register,attr"`
 }
 
+// Default paragraph styles
+// FIXME: Probably not complete
 type STYLE struct {
 	XMLName                xml.Name `xml:"STYLE"`
 	Text                   string   `xml:",chardata"`
@@ -339,6 +341,9 @@ type STYLE struct {
 	HyphenConsecutiveLines string   `xml:"HyphenConsecutiveLines,attr"`
 	BCOLOR                 string   `xml:"BCOLOR,attr"`
 	BSHADE                 string   `xml:"BSHADE,attr"`
+	PARENT                 string   `xml:"PARENT,attr"`
+	FONT                   string   `xml:"FONT,attr"`
+	FCOLOR                 string   `xml:"FCOLOR,attr"`
 }
 
 type CHARSTYLE struct {
