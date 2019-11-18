@@ -837,6 +837,7 @@ type DefaultStyle struct {
 	XMLName        xml.Name `xml:"DefaultStyle"`
 	Text           string   `xml:",chardata"`
 	LINESP         string   `xml:"LINESP,attr"`
+	LINESPMode     string   `xml:"LINESPMode,attr"`
 	FCOLOR         string   `xml:"FCOLOR,attr"`
 	FONT           string   `xml:"FONT,attr"`
 	FONTSIZE       string   `xml:"FONTSIZE,attr"`
@@ -859,6 +860,7 @@ type ITEXT struct {
 type Trail struct {
 	Text                  string `xml:",chardata"`
 	LINESP                string `xml:"LINESP,attr"`
+	LINESPMode            string `xml:"LINESPMode,attr"`
 	ParagraphEffectOffset string `xml:"ParagraphEffectOffset,attr"`
 	ParagraphEffectIndent string `xml:"ParagraphEffectIndent,attr"`
 	DROP                  string `xml:"DROP,attr"`
