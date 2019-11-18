@@ -2,6 +2,7 @@ package scribus
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -25,195 +26,252 @@ type Document struct {
 }
 
 type DOCUMENT struct {
-	XMLName                       xml.Name     `xml:"DOCUMENT"`
-	Text                          string       `xml:",chardata"`
-	ANZPAGES                      string       `xml:"ANZPAGES,attr"`
-	PAGEWIDTH                     string       `xml:"PAGEWIDTH,attr"`
-	PAGEHEIGHT                    string       `xml:"PAGEHEIGHT,attr"`
-	BORDERLEFT                    string       `xml:"BORDERLEFT,attr"`
-	BORDERRIGHT                   string       `xml:"BORDERRIGHT,attr"`
-	BORDERTOP                     string       `xml:"BORDERTOP,attr"`
-	BORDERBOTTOM                  string       `xml:"BORDERBOTTOM,attr"`
-	PRESET                        string       `xml:"PRESET,attr"`
-	BleedTop                      string       `xml:"BleedTop,attr"`
-	BleedLeft                     string       `xml:"BleedLeft,attr"`
-	BleedRight                    string       `xml:"BleedRight,attr"`
-	BleedBottom                   string       `xml:"BleedBottom,attr"`
-	ORIENTATION                   string       `xml:"ORIENTATION,attr"`
-	PAGESIZE                      string       `xml:"PAGESIZE,attr"`
-	FIRSTNUM                      string       `xml:"FIRSTNUM,attr"`
-	BOOK                          string       `xml:"BOOK,attr"`
-	AUTOSPALTEN                   string       `xml:"AUTOSPALTEN,attr"`
-	ABSTSPALTEN                   string       `xml:"ABSTSPALTEN,attr"`
-	UNITS                         string       `xml:"UNITS,attr"`
-	DFONT                         string       `xml:"DFONT,attr"`
-	DSIZE                         string       `xml:"DSIZE,attr"`
-	DCOL                          string       `xml:"DCOL,attr"`
-	DGAP                          string       `xml:"DGAP,attr"`
-	TabFill                       string       `xml:"TabFill,attr"`
-	TabWidth                      string       `xml:"TabWidth,attr"`
-	AUTHOR                        string       `xml:"AUTHOR,attr"`
-	COMMENTS                      string       `xml:"COMMENTS,attr"`
-	KEYWORDS                      string       `xml:"KEYWORDS,attr"`
-	PUBLISHER                     string       `xml:"PUBLISHER,attr"`
-	DOCDATE                       string       `xml:"DOCDATE,attr"`
-	DOCTYPE                       string       `xml:"DOCTYPE,attr"`
-	DOCFORMAT                     string       `xml:"DOCFORMAT,attr"`
-	DOCIDENT                      string       `xml:"DOCIDENT,attr"`
-	DOCSOURCE                     string       `xml:"DOCSOURCE,attr"`
-	DOCLANGINFO                   string       `xml:"DOCLANGINFO,attr"`
-	DOCRELATION                   string       `xml:"DOCRELATION,attr"`
-	DOCCOVER                      string       `xml:"DOCCOVER,attr"`
-	DOCRIGHTS                     string       `xml:"DOCRIGHTS,attr"`
-	DOCCONTRIB                    string       `xml:"DOCCONTRIB,attr"`
-	TITLE                         string       `xml:"TITLE,attr"`
-	SUBJECT                       string       `xml:"SUBJECT,attr"`
-	VHOCH                         string       `xml:"VHOCH,attr"`
-	VHOCHSC                       string       `xml:"VHOCHSC,attr"`
-	VTIEF                         string       `xml:"VTIEF,attr"`
-	VTIEFSC                       string       `xml:"VTIEFSC,attr"`
-	VKAPIT                        string       `xml:"VKAPIT,attr"`
-	BASEGRID                      string       `xml:"BASEGRID,attr"`
-	BASEO                         string       `xml:"BASEO,attr"`
-	AUTOL                         string       `xml:"AUTOL,attr"`
-	UnderlinePos                  string       `xml:"UnderlinePos,attr"`
-	UnderlineWidth                string       `xml:"UnderlineWidth,attr"`
-	StrikeThruPos                 string       `xml:"StrikeThruPos,attr"`
-	StrikeThruWidth               string       `xml:"StrikeThruWidth,attr"`
-	GROUPC                        string       `xml:"GROUPC,attr"`
-	HCMS                          string       `xml:"HCMS,attr"`
-	DPSo                          string       `xml:"DPSo,attr"`
-	DPSFo                         string       `xml:"DPSFo,attr"`
-	DPuse                         string       `xml:"DPuse,attr"`
-	DPgam                         string       `xml:"DPgam,attr"`
-	DPbla                         string       `xml:"DPbla,attr"`
-	DPPr                          string       `xml:"DPPr,attr"`
-	DPIn                          string       `xml:"DPIn,attr"`
-	DPInCMYK                      string       `xml:"DPInCMYK,attr"`
-	DPIn2                         string       `xml:"DPIn2,attr"`
-	DPIn3                         string       `xml:"DPIn3,attr"`
-	DISc                          string       `xml:"DISc,attr"`
-	DIIm                          string       `xml:"DIIm,attr"`
-	ALAYER                        string       `xml:"ALAYER,attr"`
-	LANGUAGE                      string       `xml:"LANGUAGE,attr"`
-	MINWORDLEN                    string       `xml:"MINWORDLEN,attr"`
-	HYCOUNT                       string       `xml:"HYCOUNT,attr"`
-	AUTOMATIC                     string       `xml:"AUTOMATIC,attr"`
-	AUTOCHECK                     string       `xml:"AUTOCHECK,attr"`
-	GUIDELOCK                     string       `xml:"GUIDELOCK,attr"`
-	SnapToGuides                  string       `xml:"SnapToGuides,attr"`
-	SnapToGrid                    string       `xml:"SnapToGrid,attr"`
-	SnapToElement                 string       `xml:"SnapToElement,attr"`
-	MINGRID                       string       `xml:"MINGRID,attr"`
-	MAJGRID                       string       `xml:"MAJGRID,attr"`
-	SHOWGRID                      string       `xml:"SHOWGRID,attr"`
-	SHOWGUIDES                    string       `xml:"SHOWGUIDES,attr"`
-	Showcolborders                string       `xml:"showcolborders,attr"`
-	PreviewMode                   string       `xml:"previewMode,attr"`
-	SHOWFRAME                     string       `xml:"SHOWFRAME,attr"`
-	SHOWControl                   string       `xml:"SHOWControl,attr"`
-	SHOWLAYERM                    string       `xml:"SHOWLAYERM,attr"`
-	SHOWMARGIN                    string       `xml:"SHOWMARGIN,attr"`
-	SHOWBASE                      string       `xml:"SHOWBASE,attr"`
-	SHOWPICT                      string       `xml:"SHOWPICT,attr"`
-	SHOWLINK                      string       `xml:"SHOWLINK,attr"`
-	RulerMode                     string       `xml:"rulerMode,attr"`
-	Showrulers                    string       `xml:"showrulers,attr"`
-	ShowBleed                     string       `xml:"showBleed,attr"`
-	RulerXoffset                  string       `xml:"rulerXoffset,attr"`
-	RulerYoffset                  string       `xml:"rulerYoffset,attr"`
-	GuideRad                      string       `xml:"GuideRad,attr"`
-	GRAB                          string       `xml:"GRAB,attr"`
-	POLYC                         string       `xml:"POLYC,attr"`
-	POLYF                         string       `xml:"POLYF,attr"`
-	POLYR                         string       `xml:"POLYR,attr"`
-	POLYIR                        string       `xml:"POLYIR,attr"`
-	POLYCUR                       string       `xml:"POLYCUR,attr"`
-	POLYOCUR                      string       `xml:"POLYOCUR,attr"`
-	POLYS                         string       `xml:"POLYS,attr"`
-	ArcStartAngle                 string       `xml:"arcStartAngle,attr"`
-	ArcSweepAngle                 string       `xml:"arcSweepAngle,attr"`
-	SpiralStartAngle              string       `xml:"spiralStartAngle,attr"`
-	SpiralEndAngle                string       `xml:"spiralEndAngle,attr"`
-	SpiralFactor                  string       `xml:"spiralFactor,attr"`
-	AutoSave                      string       `xml:"AutoSave,attr"`
-	AutoSaveTime                  string       `xml:"AutoSaveTime,attr"`
-	ScratchBottom                 string       `xml:"ScratchBottom,attr"`
-	ScratchLeft                   string       `xml:"ScratchLeft,attr"`
-	ScratchRight                  string       `xml:"ScratchRight,attr"`
-	ScratchTop                    string       `xml:"ScratchTop,attr"`
-	GapHorizontal                 string       `xml:"GapHorizontal,attr"`
-	GapVertical                   string       `xml:"GapVertical,attr"`
-	StartArrow                    string       `xml:"StartArrow,attr"`
-	EndArrow                      string       `xml:"EndArrow,attr"`
-	PEN                           string       `xml:"PEN,attr"`
-	BRUSH                         string       `xml:"BRUSH,attr"`
-	PENLINE                       string       `xml:"PENLINE,attr"`
-	PENTEXT                       string       `xml:"PENTEXT,attr"`
-	StrokeText                    string       `xml:"StrokeText,attr"`
-	TextBackGround                string       `xml:"TextBackGround,attr"`
-	TextLineColor                 string       `xml:"TextLineColor,attr"`
-	TextBackGroundShade           string       `xml:"TextBackGroundShade,attr"`
-	TextLineShade                 string       `xml:"TextLineShade,attr"`
-	TextPenShade                  string       `xml:"TextPenShade,attr"`
-	TextStrokeShade               string       `xml:"TextStrokeShade,attr"`
-	STIL                          string       `xml:"STIL,attr"`
-	STILLINE                      string       `xml:"STILLINE,attr"`
-	WIDTH                         string       `xml:"WIDTH,attr"`
-	WIDTHLINE                     string       `xml:"WIDTHLINE,attr"`
-	PENSHADE                      string       `xml:"PENSHADE,attr"`
-	LINESHADE                     string       `xml:"LINESHADE,attr"`
-	BRUSHSHADE                    string       `xml:"BRUSHSHADE,attr"`
-	CPICT                         string       `xml:"CPICT,attr"`
-	PICTSHADE                     string       `xml:"PICTSHADE,attr"`
-	CSPICT                        string       `xml:"CSPICT,attr"`
-	PICTSSHADE                    string       `xml:"PICTSSHADE,attr"`
-	PICTSCX                       string       `xml:"PICTSCX,attr"`
-	PICTSCY                       string       `xml:"PICTSCY,attr"`
-	PSCALE                        string       `xml:"PSCALE,attr"`
-	PASPECT                       string       `xml:"PASPECT,attr"`
-	EmbeddedPath                  string       `xml:"EmbeddedPath,attr"`
-	HalfRes                       string       `xml:"HalfRes,attr"`
-	DispX                         string       `xml:"dispX,attr"`
-	DispY                         string       `xml:"dispY,attr"`
-	Constrain                     string       `xml:"constrain,attr"`
-	MINORC                        string       `xml:"MINORC,attr"`
-	MAJORC                        string       `xml:"MAJORC,attr"`
-	GuideC                        string       `xml:"GuideC,attr"`
-	BaseC                         string       `xml:"BaseC,attr"`
-	RenderStack                   string       `xml:"renderStack,attr"`
-	GridType                      string       `xml:"GridType,attr"`
-	PAGEC                         string       `xml:"PAGEC,attr"`
-	MARGC                         string       `xml:"MARGC,attr"`
-	RANDF                         string       `xml:"RANDF,attr"`
-	CurrentProfile                string       `xml:"currentProfile,attr"`
-	CalligraphicPenFillColor      string       `xml:"calligraphicPenFillColor,attr"`
-	CalligraphicPenLineColor      string       `xml:"calligraphicPenLineColor,attr"`
-	CalligraphicPenFillColorShade string       `xml:"calligraphicPenFillColorShade,attr"`
-	CalligraphicPenLineColorShade string       `xml:"calligraphicPenLineColorShade,attr"`
-	CalligraphicPenLineWidth      string       `xml:"calligraphicPenLineWidth,attr"`
-	CalligraphicPenAngle          string       `xml:"calligraphicPenAngle,attr"`
-	CalligraphicPenWidth          string       `xml:"calligraphicPenWidth,attr"`
-	CalligraphicPenStyle          string       `xml:"calligraphicPenStyle,attr"`
-	CheckProfile                  CheckProfile `xml:"CheckProfile"`
-	COLOR                         []COLOR      `xml:"COLOR"`
-	HYPHEN                        string       `xml:"HYPHEN"`
-	STYLE                         STYLE        `xml:"STYLE"`
-	CHARSTYLE                     CHARSTYLE    `xml:"CHARSTYLE"`
-	TableStyle                    TableStyle   `xml:"TableStyle"`
-	CellStyle                     CellStyle    `xml:"CellStyle"`
-	LAYERS                        LAYERS       `xml:"LAYERS"`
-	Printer                       Printer      `xml:"Printer"`
-	PDF                           PDF          `xml:"PDF"`
-	DocItemAttributes             string       `xml:"DocItemAttributes"`
-	TablesOfContents              string       `xml:"TablesOfContents"`
-	NotesStyles                   NotesStyles  `xml:"NotesStyles"`
-	NotesFrames                   string       `xml:"NotesFrames"`
-	PageSets                      PageSets     `xml:"PageSets"`
-	Sections                      Sections     `xml:"Sections"`
-	MASTERPAGE                    MASTERPAGE   `xml:"MASTERPAGE"`
-	PAGE                          PAGE         `xml:"PAGE"`
-	PAGEOBJECT                    []PAGEOBJECT `xml:"PAGEOBJECT"`
+	XMLName                       xml.Name       `xml:"DOCUMENT"`
+	Text                          string         `xml:",chardata"`
+	ANZPAGES                      string         `xml:"ANZPAGES,attr"`
+	PAGEWIDTH                     string         `xml:"PAGEWIDTH,attr"`
+	PAGEHEIGHT                    string         `xml:"PAGEHEIGHT,attr"`
+	BORDERLEFT                    string         `xml:"BORDERLEFT,attr"`
+	BORDERRIGHT                   string         `xml:"BORDERRIGHT,attr"`
+	BORDERTOP                     string         `xml:"BORDERTOP,attr"`
+	BORDERBOTTOM                  string         `xml:"BORDERBOTTOM,attr"`
+	PRESET                        string         `xml:"PRESET,attr"`
+	BleedTop                      string         `xml:"BleedTop,attr"`
+	BleedLeft                     string         `xml:"BleedLeft,attr"`
+	BleedRight                    string         `xml:"BleedRight,attr"`
+	BleedBottom                   string         `xml:"BleedBottom,attr"`
+	ORIENTATION                   string         `xml:"ORIENTATION,attr"`
+	PAGESIZE                      string         `xml:"PAGESIZE,attr"`
+	FIRSTNUM                      string         `xml:"FIRSTNUM,attr"`
+	BOOK                          string         `xml:"BOOK,attr"`
+	AUTOSPALTEN                   string         `xml:"AUTOSPALTEN,attr"`
+	ABSTSPALTEN                   string         `xml:"ABSTSPALTEN,attr"`
+	UNITS                         string         `xml:"UNITS,attr"`
+	DFONT                         string         `xml:"DFONT,attr"`
+	DSIZE                         string         `xml:"DSIZE,attr"`
+	DCOL                          string         `xml:"DCOL,attr"`
+	DGAP                          string         `xml:"DGAP,attr"`
+	TabFill                       string         `xml:"TabFill,attr"`
+	TabWidth                      string         `xml:"TabWidth,attr"`
+	TextDistLeft                  string         `xml:"TextDistLeft,attr"`
+	TextDistRight                 string         `xml:"TextDistRight,attr"`
+	TextDistBottom                string         `xml:"TextDistBottom,attr"`
+	TextDistTop                   string         `xml:"TextDistTop,attr"`
+	AUTHOR                        string         `xml:"AUTHOR,attr"`
+	COMMENTS                      string         `xml:"COMMENTS,attr"`
+	KEYWORDS                      string         `xml:"KEYWORDS,attr"`
+	PUBLISHER                     string         `xml:"PUBLISHER,attr"`
+	DOCDATE                       string         `xml:"DOCDATE,attr"`
+	DOCTYPE                       string         `xml:"DOCTYPE,attr"`
+	DOCFORMAT                     string         `xml:"DOCFORMAT,attr"`
+	DOCIDENT                      string         `xml:"DOCIDENT,attr"`
+	DOCSOURCE                     string         `xml:"DOCSOURCE,attr"`
+	DOCLANGINFO                   string         `xml:"DOCLANGINFO,attr"`
+	DOCRELATION                   string         `xml:"DOCRELATION,attr"`
+	DOCCOVER                      string         `xml:"DOCCOVER,attr"`
+	DOCRIGHTS                     string         `xml:"DOCRIGHTS,attr"`
+	DOCCONTRIB                    string         `xml:"DOCCONTRIB,attr"`
+	TITLE                         string         `xml:"TITLE,attr"`
+	SUBJECT                       string         `xml:"SUBJECT,attr"`
+	VHOCH                         string         `xml:"VHOCH,attr"`
+	VHOCHSC                       string         `xml:"VHOCHSC,attr"`
+	VTIEF                         string         `xml:"VTIEF,attr"`
+	VTIEFSC                       string         `xml:"VTIEFSC,attr"`
+	VKAPIT                        string         `xml:"VKAPIT,attr"`
+	BASEGRID                      string         `xml:"BASEGRID,attr"`
+	BASEO                         string         `xml:"BASEO,attr"`
+	AUTOL                         string         `xml:"AUTOL,attr"`
+	UnderlinePos                  string         `xml:"UnderlinePos,attr"`
+	UnderlineWidth                string         `xml:"UnderlineWidth,attr"`
+	StrikeThruPos                 string         `xml:"StrikeThruPos,attr"`
+	StrikeThruWidth               string         `xml:"StrikeThruWidth,attr"`
+	GROUPC                        string         `xml:"GROUPC,attr"`
+	HCMS                          string         `xml:"HCMS,attr"`
+	DPSo                          string         `xml:"DPSo,attr"`
+	DPSFo                         string         `xml:"DPSFo,attr"`
+	DPuse                         string         `xml:"DPuse,attr"`
+	DPgam                         string         `xml:"DPgam,attr"`
+	DPbla                         string         `xml:"DPbla,attr"`
+	DPPr                          string         `xml:"DPPr,attr"`
+	DPIn                          string         `xml:"DPIn,attr"`
+	DPInCMYK                      string         `xml:"DPInCMYK,attr"`
+	DPIn2                         string         `xml:"DPIn2,attr"`
+	DPIn3                         string         `xml:"DPIn3,attr"`
+	DISc                          string         `xml:"DISc,attr"`
+	DIIm                          string         `xml:"DIIm,attr"`
+	ALAYER                        string         `xml:"ALAYER,attr"`
+	LANGUAGE                      string         `xml:"LANGUAGE,attr"`
+	MINWORDLEN                    string         `xml:"MINWORDLEN,attr"`
+	HYCOUNT                       string         `xml:"HYCOUNT,attr"`
+	AUTOMATIC                     string         `xml:"AUTOMATIC,attr"`
+	AUTOCHECK                     string         `xml:"AUTOCHECK,attr"`
+	GUIDELOCK                     string         `xml:"GUIDELOCK,attr"`
+	SnapToGuides                  string         `xml:"SnapToGuides,attr"`
+	SnapToGrid                    string         `xml:"SnapToGrid,attr"`
+	SnapToElement                 string         `xml:"SnapToElement,attr"`
+	MINGRID                       string         `xml:"MINGRID,attr"`
+	MAJGRID                       string         `xml:"MAJGRID,attr"`
+	SHOWGRID                      string         `xml:"SHOWGRID,attr"`
+	SHOWGUIDES                    string         `xml:"SHOWGUIDES,attr"`
+	Showcolborders                string         `xml:"showcolborders,attr"`
+	PreviewMode                   string         `xml:"previewMode,attr"`
+	SHOWFRAME                     string         `xml:"SHOWFRAME,attr"`
+	SHOWControl                   string         `xml:"SHOWControl,attr"`
+	SHOWLAYERM                    string         `xml:"SHOWLAYERM,attr"`
+	SHOWMARGIN                    string         `xml:"SHOWMARGIN,attr"`
+	SHOWBASE                      string         `xml:"SHOWBASE,attr"`
+	SHOWPICT                      string         `xml:"SHOWPICT,attr"`
+	SHOWLINK                      string         `xml:"SHOWLINK,attr"`
+	RulerMode                     string         `xml:"rulerMode,attr"`
+	Showrulers                    string         `xml:"showrulers,attr"`
+	ShowBleed                     string         `xml:"showBleed,attr"`
+	RulerXoffset                  string         `xml:"rulerXoffset,attr"`
+	RulerYoffset                  string         `xml:"rulerYoffset,attr"`
+	GuideRad                      string         `xml:"GuideRad,attr"`
+	GRAB                          string         `xml:"GRAB,attr"`
+	POLYC                         string         `xml:"POLYC,attr"`
+	POLYF                         string         `xml:"POLYF,attr"`
+	POLYR                         string         `xml:"POLYR,attr"`
+	POLYIR                        string         `xml:"POLYIR,attr"`
+	POLYCUR                       string         `xml:"POLYCUR,attr"`
+	POLYOCUR                      string         `xml:"POLYOCUR,attr"`
+	POLYS                         string         `xml:"POLYS,attr"`
+	ArcStartAngle                 string         `xml:"arcStartAngle,attr"`
+	ArcSweepAngle                 string         `xml:"arcSweepAngle,attr"`
+	SpiralStartAngle              string         `xml:"spiralStartAngle,attr"`
+	SpiralEndAngle                string         `xml:"spiralEndAngle,attr"`
+	SpiralFactor                  string         `xml:"spiralFactor,attr"`
+	AutoSave                      string         `xml:"AutoSave,attr"`
+	AutoSaveTime                  string         `xml:"AutoSaveTime,attr"`
+	AutoSaveCount                 string         `xml:"AutoSaveCount,attr"`
+	AutoSaveKeep                  string         `xml:"AutoSaveKeep,attr"`
+	AUtoSaveInDocDir              string         `xml:"AUtoSaveInDocDir,attr"`
+	AutoSaveDir                   string         `xml:"AutoSaveDir,attr"`
+	ScratchBottom                 string         `xml:"ScratchBottom,attr"`
+	ScratchLeft                   string         `xml:"ScratchLeft,attr"`
+	ScratchRight                  string         `xml:"ScratchRight,attr"`
+	ScratchTop                    string         `xml:"ScratchTop,attr"`
+	GapHorizontal                 string         `xml:"GapHorizontal,attr"`
+	GapVertical                   string         `xml:"GapVertical,attr"`
+	StartArrow                    string         `xml:"StartArrow,attr"`
+	EndArrow                      string         `xml:"EndArrow,attr"`
+	PEN                           string         `xml:"PEN,attr"`
+	BRUSH                         string         `xml:"BRUSH,attr"`
+	PENLINE                       string         `xml:"PENLINE,attr"`
+	PENTEXT                       string         `xml:"PENTEXT,attr"`
+	StrokeText                    string         `xml:"StrokeText,attr"`
+	TextBackGround                string         `xml:"TextBackGround,attr"`
+	TextLineColor                 string         `xml:"TextLineColor,attr"`
+	TextBackGroundShade           string         `xml:"TextBackGroundShade,attr"`
+	TextLineShade                 string         `xml:"TextLineShade,attr"`
+	TextPenShade                  string         `xml:"TextPenShade,attr"`
+	TextStrokeShade               string         `xml:"TextStrokeShade,attr"`
+	STIL                          string         `xml:"STIL,attr"`
+	STILLINE                      string         `xml:"STILLINE,attr"`
+	WIDTH                         string         `xml:"WIDTH,attr"`
+	WIDTHLINE                     string         `xml:"WIDTHLINE,attr"`
+	PENSHADE                      string         `xml:"PENSHADE,attr"`
+	LINESHADE                     string         `xml:"LINESHADE,attr"`
+	BRUSHSHADE                    string         `xml:"BRUSHSHADE,attr"`
+	CPICT                         string         `xml:"CPICT,attr"`
+	PICTSHADE                     string         `xml:"PICTSHADE,attr"`
+	CSPICT                        string         `xml:"CSPICT,attr"`
+	PICTSSHADE                    string         `xml:"PICTSSHADE,attr"`
+	PICTSCX                       string         `xml:"PICTSCX,attr"`
+	PICTSCY                       string         `xml:"PICTSCY,attr"`
+	PSCALE                        string         `xml:"PSCALE,attr"`
+	PASPECT                       string         `xml:"PASPECT,attr"`
+	EmbeddedPath                  string         `xml:"EmbeddedPath,attr"`
+	HalfRes                       string         `xml:"HalfRes,attr"`
+	DispX                         string         `xml:"dispX,attr"`
+	DispY                         string         `xml:"dispY,attr"`
+	Constrain                     string         `xml:"constrain,attr"`
+	MINORC                        string         `xml:"MINORC,attr"`
+	MAJORC                        string         `xml:"MAJORC,attr"`
+	GuideC                        string         `xml:"GuideC,attr"`
+	BaseC                         string         `xml:"BaseC,attr"`
+	RenderStack                   string         `xml:"renderStack,attr"`
+	GridType                      string         `xml:"GridType,attr"`
+	PAGEC                         string         `xml:"PAGEC,attr"`
+	MARGC                         string         `xml:"MARGC,attr"`
+	RANDF                         string         `xml:"RANDF,attr"`
+	CurrentProfile                string         `xml:"currentProfile,attr"`
+	CalligraphicPenFillColor      string         `xml:"calligraphicPenFillColor,attr"`
+	CalligraphicPenLineColor      string         `xml:"calligraphicPenLineColor,attr"`
+	CalligraphicPenFillColorShade string         `xml:"calligraphicPenFillColorShade,attr"`
+	CalligraphicPenLineColorShade string         `xml:"calligraphicPenLineColorShade,attr"`
+	CalligraphicPenLineWidth      string         `xml:"calligraphicPenLineWidth,attr"`
+	CalligraphicPenAngle          string         `xml:"calligraphicPenAngle,attr"`
+	CalligraphicPenWidth          string         `xml:"calligraphicPenWidth,attr"`
+	CalligraphicPenStyle          string         `xml:"calligraphicPenStyle,attr"`
+	CheckProfile                  []CheckProfile `xml:"CheckProfile"`
+	COLOR                         []COLOR        `xml:"COLOR"`
+	HYPHEN                        string         `xml:"HYPHEN"`
+	STYLE                         STYLE          `xml:"STYLE"`
+	CHARSTYLE                     CHARSTYLE      `xml:"CHARSTYLE"`
+	TableStyle                    TableStyle     `xml:"TableStyle"`
+	CellStyle                     CellStyle      `xml:"CellStyle"`
+	LAYERS                        LAYERS         `xml:"LAYERS"`
+	Printer                       Printer        `xml:"Printer"`
+	PDF                           PDF            `xml:"PDF"`
+	DocItemAttributes             string         `xml:"DocItemAttributes"`
+	TablesOfContents              string         `xml:"TablesOfContents"`
+	NotesStyles                   NotesStyles    `xml:"NotesStyles"`
+	NotesFrames                   string         `xml:"NotesFrames"`
+	PageSets                      PageSets       `xml:"PageSets"`
+	Sections                      Sections       `xml:"Sections"`
+	MASTERPAGE                    MASTERPAGE     `xml:"MASTERPAGE"`
+	PAGE                          []PAGE         `xml:"PAGE"`
+	PAGEOBJECT                    []PAGEOBJECT   `xml:"PAGEOBJECT"`
+}
+
+type FRAMEOBJECT struct {
+	XMLName         xml.Name  `xml:"FRAMEOBJECT"`
+	Text            string    `xml:",chardata"`
+	InID            string    `xml:"InID,attr"`
+	XPOS            string    `xml:"XPOS,attr"`
+	YPOS            string    `xml:"YPOS,attr"`
+	OwnPage         string    `xml:"OwnPage,attr"`
+	ItemID          string    `xml:"ItemID,attr"`
+	PTYPE           string    `xml:"PTYPE,attr"`
+	WIDTH           string    `xml:"WIDTH,attr"`
+	HEIGHT          string    `xml:"HEIGHT,attr"`
+	FRTYPE          string    `xml:"FRTYPE,attr"`
+	CLIPEDIT        string    `xml:"CLIPEDIT,attr"`
+	PWIDTH          string    `xml:"PWIDTH,attr"`
+	PLINEART        string    `xml:"PLINEART,attr"`
+	LOCALSCX        string    `xml:"LOCALSCX,attr"`
+	LOCALSCY        string    `xml:"LOCALSCY,attr"`
+	LOCALX          string    `xml:"LOCALX,attr"`
+	LOCALY          string    `xml:"LOCALY,attr"`
+	LOCALROT        string    `xml:"LOCALROT,attr"`
+	PICART          string    `xml:"PICART,attr"`
+	SCALETYPE       string    `xml:"SCALETYPE,attr"`
+	RATIO           string    `xml:"RATIO,attr"`
+	COLUMNS         string    `xml:"COLUMNS,attr"`
+	COLGAP          string    `xml:"COLGAP,attr"`
+	AUTOTEXT        string    `xml:"AUTOTEXT,attr"`
+	EXTRA           string    `xml:"EXTRA,attr"`
+	TEXTRA          string    `xml:"TEXTRA,attr"`
+	BEXTRA          string    `xml:"BEXTRA,attr"`
+	REXTRA          string    `xml:"REXTRA,attr"`
+	VAlign          string    `xml:"VAlign,attr"`
+	FLOP            string    `xml:"FLOP,attr"`
+	PLTSHOW         string    `xml:"PLTSHOW,attr"`
+	BASEOF          string    `xml:"BASEOF,attr"`
+	TextPathType    string    `xml:"textPathType,attr"`
+	TextPathFlipped string    `xml:"textPathFlipped,attr"`
+	Path            string    `xml:"path,attr"`
+	Copath          string    `xml:"copath,attr"`
+	IsInline        string    `xml:"isInline,attr"`
+	GXpos           string    `xml:"gXpos,attr"`
+	GYpos           string    `xml:"gYpos,attr"`
+	GWidth          string    `xml:"gWidth,attr"`
+	GHeight         string    `xml:"gHeight,attr"`
+	LAYER           string    `xml:"LAYER,attr"`
+	NEXTITEM        string    `xml:"NEXTITEM,attr"`
+	BACKITEM        string    `xml:"BACKITEM,attr"`
+	StoryText       StoryText `xml:"StoryText"`
 }
 
 type CheckProfile struct {
@@ -248,57 +306,69 @@ type COLOR struct {
 	Text     string   `xml:",chardata"`
 	NAME     string   `xml:"NAME,attr"`
 	CMYK     string   `xml:"CMYK,attr"`
+	SPACE    string   `xml:"SPACE,attr"`
+	C        string   `xml:"C,attr"`
+	M        string   `xml:"M,attr"`
+	Y        string   `xml:"Y,attr"`
+	K        string   `xml:"K,attr"`
+	R        string   `xml:"R,attr"`
+	G        string   `xml:"G,attr"`
+	B        string   `xml:"B,attr"`
 	Register string   `xml:"Register,attr"`
 }
 
 type STYLE struct {
-	XMLName               xml.Name `xml:"STYLE"`
-	Text                  string   `xml:",chardata"`
-	NAME                  string   `xml:"NAME,attr"`
-	DefaultStyle          string   `xml:"DefaultStyle,attr"`
-	ALIGN                 string   `xml:"ALIGN,attr"`
-	LINESPMode            string   `xml:"LINESPMode,attr"`
-	LINESP                string   `xml:"LINESP,attr"`
-	INDENT                string   `xml:"INDENT,attr"`
-	RMARGIN               string   `xml:"RMARGIN,attr"`
-	FIRST                 string   `xml:"FIRST,attr"`
-	VOR                   string   `xml:"VOR,attr"`
-	NACH                  string   `xml:"NACH,attr"`
-	ParagraphEffectOffset string   `xml:"ParagraphEffectOffset,attr"`
-	DROP                  string   `xml:"DROP,attr"`
-	DROPLIN               string   `xml:"DROPLIN,attr"`
-	Bullet                string   `xml:"Bullet,attr"`
-	Numeration            string   `xml:"Numeration,attr"`
-	BCOLOR                string   `xml:"BCOLOR,attr"`
-	BSHADE                string   `xml:"BSHADE,attr"`
+	XMLName                xml.Name `xml:"STYLE"`
+	Text                   string   `xml:",chardata"`
+	NAME                   string   `xml:"NAME,attr"`
+	DefaultStyle           string   `xml:"DefaultStyle,attr"`
+	ALIGN                  string   `xml:"ALIGN,attr"`
+	DIRECTION              string   `xml:"DIRECTION,attr"`
+	LINESPMode             string   `xml:"LINESPMode,attr"`
+	LINESP                 string   `xml:"LINESP,attr"`
+	INDENT                 string   `xml:"INDENT,attr"`
+	RMARGIN                string   `xml:"RMARGIN,attr"`
+	FIRST                  string   `xml:"FIRST,attr"`
+	VOR                    string   `xml:"VOR,attr"`
+	NACH                   string   `xml:"NACH,attr"`
+	ParagraphEffectOffset  string   `xml:"ParagraphEffectOffset,attr"`
+	DROP                   string   `xml:"DROP,attr"`
+	DROPLIN                string   `xml:"DROPLIN,attr"`
+	Bullet                 string   `xml:"Bullet,attr"`
+	Numeration             string   `xml:"Numeration,attr"`
+	HyphenConsecutiveLines string   `xml:"HyphenConsecutiveLines,attr"`
+	BCOLOR                 string   `xml:"BCOLOR,attr"`
+	BSHADE                 string   `xml:"BSHADE,attr"`
 }
 
 type CHARSTYLE struct {
-	XMLName      xml.Name `xml:"CHARSTYLE"`
-	Text         string   `xml:",chardata"`
-	CNAME        string   `xml:"CNAME,attr"`
-	DefaultStyle string   `xml:"DefaultStyle,attr"`
-	FONT         string   `xml:"FONT,attr"`
-	FONTSIZE     string   `xml:"FONTSIZE,attr"`
-	FEATURES     string   `xml:"FEATURES,attr"`
-	FCOLOR       string   `xml:"FCOLOR,attr"`
-	FSHADE       string   `xml:"FSHADE,attr"`
-	SCOLOR       string   `xml:"SCOLOR,attr"`
-	BGCOLOR      string   `xml:"BGCOLOR,attr"`
-	BGSHADE      string   `xml:"BGSHADE,attr"`
-	SSHADE       string   `xml:"SSHADE,attr"`
-	TXTSHX       string   `xml:"TXTSHX,attr"`
-	TXTSHY       string   `xml:"TXTSHY,attr"`
-	TXTOUT       string   `xml:"TXTOUT,attr"`
-	TXTULP       string   `xml:"TXTULP,attr"`
-	TXTULW       string   `xml:"TXTULW,attr"`
-	TXTSTP       string   `xml:"TXTSTP,attr"`
-	TXTSTW       string   `xml:"TXTSTW,attr"`
-	SCALEH       string   `xml:"SCALEH,attr"`
-	SCALEV       string   `xml:"SCALEV,attr"`
-	BASEO        string   `xml:"BASEO,attr"`
-	KERN         string   `xml:"KERN,attr"`
-	LANGUAGE     string   `xml:"LANGUAGE,attr"`
+	XMLName       xml.Name `xml:"CHARSTYLE"`
+	Text          string   `xml:",chardata"`
+	CNAME         string   `xml:"CNAME,attr"`
+	DefaultStyle  string   `xml:"DefaultStyle,attr"`
+	FONT          string   `xml:"FONT,attr"`
+	FONTSIZE      string   `xml:"FONTSIZE,attr"`
+	FONTFEATURES  string   `xml:"FONTFEATURES,attr"`
+	FEATURES      string   `xml:"FEATURES,attr"`
+	FCOLOR        string   `xml:"FCOLOR,attr"`
+	FSHADE        string   `xml:"FSHADE,attr"`
+	HyphenWordMin string   `xml:"HyphenWordMin,attr"`
+	SCOLOR        string   `xml:"SCOLOR,attr"`
+	BGCOLOR       string   `xml:"BGCOLOR,attr"`
+	BGSHADE       string   `xml:"BGSHADE,attr"`
+	SSHADE        string   `xml:"SSHADE,attr"`
+	TXTSHX        string   `xml:"TXTSHX,attr"`
+	TXTSHY        string   `xml:"TXTSHY,attr"`
+	TXTOUT        string   `xml:"TXTOUT,attr"`
+	TXTULP        string   `xml:"TXTULP,attr"`
+	TXTULW        string   `xml:"TXTULW,attr"`
+	TXTSTP        string   `xml:"TXTSTP,attr"`
+	TXTSTW        string   `xml:"TXTSTW,attr"`
+	SCALEH        string   `xml:"SCALEH,attr"`
+	SCALEV        string   `xml:"SCALEV,attr"`
+	BASEO         string   `xml:"BASEO,attr"`
+	KERN          string   `xml:"KERN,attr"`
+	LANGUAGE      string   `xml:"LANGUAGE,attr"`
 }
 
 type TableStyle struct {
@@ -364,7 +434,7 @@ type CellStyle struct {
 	TableBorderBottom TableBorderBottom `xml:"TableBorderBottom"`
 }
 
-type LAYERS struct {
+type LAYERS []struct {
 	XMLName  xml.Name `xml:"LAYERS"`
 	Text     string   `xml:",chardata"`
 	NUMMER   string   `xml:"NUMMER,attr"`
@@ -481,7 +551,21 @@ type PDF struct {
 	OpenAfterExport   string   `xml:"openAfterExport,attr"`
 	PageLayout        string   `xml:"PageLayout,attr"`
 	OpenAction        string   `xml:"openAction,attr"`
-	LPI               LPI      `xml:"LPI"`
+	Fonts             Fonts    `xml:"Fonts"`
+	Subset            []Subset `xml:"Subset"`
+	LPI               []LPI    `xml:"LPI"`
+}
+
+type Fonts struct {
+	XMLName xml.Name `xml:"Fonts"`
+	Text    string   `xml:",chardata"`
+	Name    string   `xml:"Name,attr"`
+}
+
+type Subset struct {
+	XMLName xml.Name `xml:"Subset"`
+	Text    string   `xml:",chardata"`
+	Name    string   `xml:"Name,attr"`
 }
 
 type LPI struct {
@@ -522,17 +606,17 @@ type NotesStyles struct {
 type PageSets struct {
 	XMLName xml.Name `xml:"PageSets"`
 	Text    string   `xml:",chardata"`
-	Set     Set      `xml:"Set"`
+	Set     []Set    `xml:"Set"`
 }
 
 type Set struct {
-	XMLName   xml.Name  `xml:"Set"`
-	Text      string    `xml:",chardata"`
-	Name      string    `xml:"Name,attr"`
-	FirstPage string    `xml:"FirstPage,attr"`
-	Rows      string    `xml:"Rows,attr"`
-	Columns   string    `xml:"Columns,attr"`
-	PageNames PageNames `xml:"PageNames"`
+	XMLName   xml.Name    `xml:"Set"`
+	Text      string      `xml:",chardata"`
+	Name      string      `xml:"Name,attr"`
+	FirstPage string      `xml:"FirstPage,attr"`
+	Rows      string      `xml:"Rows,attr"`
+	Columns   string      `xml:"Columns,attr"`
+	PageNames []PageNames `xml:"PageNames"`
 }
 
 type PageNames struct {
@@ -633,67 +717,93 @@ type PAGE struct {
 }
 
 type PAGEOBJECT struct {
-	XMLName         xml.Name  `xml:"PAGEOBJECT"`
-	Text            string    `xml:",chardata"`
-	XPOS            string    `xml:"XPOS,attr"`
-	YPOS            string    `xml:"YPOS,attr"`
-	OwnPage         string    `xml:"OwnPage,attr"`
-	ItemID          string    `xml:"ItemID,attr"`
-	PTYPE           string    `xml:"PTYPE,attr"`
-	WIDTH           string    `xml:"WIDTH,attr"`
-	HEIGHT          string    `xml:"HEIGHT,attr"`
-	FRTYPE          string    `xml:"FRTYPE,attr"`
-	CLIPEDIT        string    `xml:"CLIPEDIT,attr"`
-	PWIDTH          string    `xml:"PWIDTH,attr"`
-	PLINEART        string    `xml:"PLINEART,attr"`
-	LOCALSCX        string    `xml:"LOCALSCX,attr"`
-	LOCALSCY        string    `xml:"LOCALSCY,attr"`
-	LOCALX          string    `xml:"LOCALX,attr"`
-	LOCALY          string    `xml:"LOCALY,attr"`
-	LOCALROT        string    `xml:"LOCALROT,attr"`
-	PICART          string    `xml:"PICART,attr"`
-	SCALETYPE       string    `xml:"SCALETYPE,attr"`
-	RATIO           string    `xml:"RATIO,attr"`
-	Pagenumber      string    `xml:"Pagenumber,attr"`
-	PFILE           string    `xml:"PFILE,attr"`
-	IRENDER         string    `xml:"IRENDER,attr"`
-	EMBEDDED        string    `xml:"EMBEDDED,attr"`
-	Path            string    `xml:"path,attr"`
-	Copath          string    `xml:"copath,attr"`
-	GXpos           string    `xml:"gXpos,attr"`
-	GYpos           string    `xml:"gYpos,attr"`
-	GWidth          string    `xml:"gWidth,attr"`
-	GHeight         string    `xml:"gHeight,attr"`
-	LAYER           string    `xml:"LAYER,attr"`
-	NEXTITEM        string    `xml:"NEXTITEM,attr"`
-	BACKITEM        string    `xml:"BACKITEM,attr"`
-	PRFILE          string    `xml:"PRFILE,attr"`
-	COLUMNS         string    `xml:"COLUMNS,attr"`
-	COLGAP          string    `xml:"COLGAP,attr"`
-	AUTOTEXT        string    `xml:"AUTOTEXT,attr"`
-	EXTRA           string    `xml:"EXTRA,attr"`
-	TEXTRA          string    `xml:"TEXTRA,attr"`
-	BEXTRA          string    `xml:"BEXTRA,attr"`
-	REXTRA          string    `xml:"REXTRA,attr"`
-	VAlign          string    `xml:"VAlign,attr"`
-	FLOP            string    `xml:"FLOP,attr"`
-	PLTSHOW         string    `xml:"PLTSHOW,attr"`
-	BASEOF          string    `xml:"BASEOF,attr"`
-	TextPathType    string    `xml:"textPathType,attr"`
-	TextPathFlipped string    `xml:"textPathFlipped,attr"`
-	PSTYLE          string    `xml:"PSTYLE,attr"`
-	StoryText       StoryText `xml:"StoryText"`
+	XMLName           xml.Name     `xml:"PAGEOBJECT"`
+	Text              string       `xml:",chardata"`
+	XPOS              string       `xml:"XPOS,attr"`
+	YPOS              string       `xml:"YPOS,attr"`
+	OwnPage           string       `xml:"OwnPage,attr"`
+	ItemID            string       `xml:"ItemID,attr"`
+	PTYPE             string       `xml:"PTYPE,attr"`
+	WIDTH             string       `xml:"WIDTH,attr"`
+	HEIGHT            string       `xml:"HEIGHT,attr"`
+	FRTYPE            string       `xml:"FRTYPE,attr"`
+	CLIPEDIT          string       `xml:"CLIPEDIT,attr"`
+	PWIDTH            string       `xml:"PWIDTH,attr"`
+	PCOLOR            string       `xml:"PCOLOR,attr"`
+	PLINEART          string       `xml:"PLINEART,attr"`
+	LOCALSCX          string       `xml:"LOCALSCX,attr"`
+	LOCALSCY          string       `xml:"LOCALSCY,attr"`
+	LOCALX            string       `xml:"LOCALX,attr"`
+	LOCALY            string       `xml:"LOCALY,attr"`
+	LOCALROT          string       `xml:"LOCALROT,attr"`
+	PICART            string       `xml:"PICART,attr"`
+	SCALETYPE         string       `xml:"SCALETYPE,attr"`
+	RATIO             string       `xml:"RATIO,attr"`
+	TransValue        string       `xml:"TransValue,attr"`
+	Path              string       `xml:"path,attr"`
+	Copath            string       `xml:"copath,attr"`
+	GXpos             string       `xml:"gXpos,attr"`
+	GYpos             string       `xml:"gYpos,attr"`
+	GWidth            string       `xml:"gWidth,attr"`
+	GHeight           string       `xml:"gHeight,attr"`
+	LAYER             string       `xml:"LAYER,attr"`
+	NEXTITEM          string       `xml:"NEXTITEM,attr"`
+	BACKITEM          string       `xml:"BACKITEM,attr"`
+	Pagenumber        string       `xml:"Pagenumber,attr"`
+	PFILE             string       `xml:"PFILE,attr"`
+	IRENDER           string       `xml:"IRENDER,attr"`
+	EMBEDDED          string       `xml:"EMBEDDED,attr"`
+	COMPRESSIONMETHOD string       `xml:"COMPRESSIONMETHOD,attr"`
+	GRExtM            string       `xml:"GRExtM,attr"`
+	GRTYPM            string       `xml:"GRTYPM,attr"`
+	GRSTARTXM         string       `xml:"GRSTARTXM,attr"`
+	GRSTARTYM         string       `xml:"GRSTARTYM,attr"`
+	GRENDXM           string       `xml:"GRENDXM,attr"`
+	GRENDYM           string       `xml:"GRENDYM,attr"`
+	GRFOCALXM         string       `xml:"GRFOCALXM,attr"`
+	GRFOCALYM         string       `xml:"GRFOCALYM,attr"`
+	GRSCALEM          string       `xml:"GRSCALEM,attr"`
+	GRSKEWM           string       `xml:"GRSKEWM,attr"`
+	ImageRes          string       `xml:"ImageRes,attr"`
+	FillRule          string       `xml:"fillRule,attr"`
+	ANNAME            string       `xml:"ANNAME,attr"`
+	GroupWidth        string       `xml:"groupWidth,attr"`
+	GroupHeight       string       `xml:"groupHeight,attr"`
+	GroupClips        string       `xml:"groupClips,attr"`
+	PLINEEND          string       `xml:"PLINEEND,attr"`
+	PLINEJOIN         string       `xml:"PLINEJOIN,attr"`
+	RADRECT           string       `xml:"RADRECT,attr"`
+	PCOLOR2           string       `xml:"PCOLOR2,attr"`
+	PRFILE            string       `xml:"PRFILE,attr"`
+	COLUMNS           string       `xml:"COLUMNS,attr"`
+	COLGAP            string       `xml:"COLGAP,attr"`
+	AUTOTEXT          string       `xml:"AUTOTEXT,attr"`
+	EXTRA             string       `xml:"EXTRA,attr"`
+	TEXTRA            string       `xml:"TEXTRA,attr"`
+	BEXTRA            string       `xml:"BEXTRA,attr"`
+	REXTRA            string       `xml:"REXTRA,attr"`
+	VAlign            string       `xml:"VAlign,attr"`
+	FLOP              string       `xml:"FLOP,attr"`
+	PLTSHOW           string       `xml:"PLTSHOW,attr"`
+	BASEOF            string       `xml:"BASEOF,attr"`
+	TextPathType      string       `xml:"textPathType,attr"`
+	TextPathFlipped   string       `xml:"textPathFlipped,attr"`
+	PSTYLE            string       `xml:"PSTYLE,attr"`
+	StoryText         StoryText    `xml:"StoryText"`
+	PAGEOBJECT        []PAGEOBJECT `xml:"PAGEOBJECT"`
 }
 
 type Para struct {
-	XMLName               xml.Name `xml:"para"`
-	Text                  string   `xml:",chardata"`
-	ParagraphEffectOffset string   `xml:"ParagraphEffectOffset,attr"`
-	ParagraphEffectIndent string   `xml:"ParagraphEffectIndent,attr"`
-	DROP                  string   `xml:"DROP,attr"`
-	Bullet                string   `xml:"Bullet,attr"`
-	BulletStr             string   `xml:"BulletStr,attr"`
-	Numeration            string   `xml:"Numeration,attr"`
+	XMLName                  xml.Name `xml:"para"`
+	Text                     string   `xml:",chardata"`
+	LINESP                   string   `xml:"LINESP,attr"`
+	ParagraphEffectCharStyle string   `xml:"ParagraphEffectCharStyle,attr"`
+	ParagraphEffectOffset    string   `xml:"ParagraphEffectOffset,attr"`
+	ParagraphEffectIndent    string   `xml:"ParagraphEffectIndent,attr"`
+	DROP                     string   `xml:"DROP,attr"`
+	Bullet                   string   `xml:"Bullet,attr"`
+	BulletStr                string   `xml:"BulletStr,attr"`
+	Numeration               string   `xml:"Numeration,attr"`
 }
 
 // FIXME: The order of 'ITEXT' and 'Para' in the XML document must not be changed;
@@ -705,7 +815,7 @@ type StoryText struct {
 	DefaultStyle  DefaultStyle    `xml:"DefaultStyle"`
 	ITEXT         []ITEXT         `xml:"ITEXT"`
 	Para          []Para          `xml:"para"`
-	Trail         string          `xml:"trail"`
+	Trail         Trail           `xml:"trail"`
 	StoryTextSpan []StoryTextSpan `xml:"StoryTextSpan"`
 }
 
@@ -719,17 +829,39 @@ type StoryTextSpan struct {
 }
 
 type DefaultStyle struct {
-	XMLName xml.Name `xml:"DefaultStyle"`
-	Text    string   `xml:",chardata"`
-	PARENT  string   `xml:"PARENT,attr"`
-	CPARENT string   `xml:"CPARENT,attr"`
+	XMLName        xml.Name `xml:"DefaultStyle"`
+	Text           string   `xml:",chardata"`
+	LINESP         string   `xml:"LINESP,attr"`
+	FCOLOR         string   `xml:"FCOLOR,attr"`
+	FONT           string   `xml:"FONT,attr"`
+	FONTSIZE       string   `xml:"FONTSIZE,attr"`
+	PARENT         string   `xml:"PARENT,attr"`
+	CPARENT        string   `xml:"CPARENT,attr"`
+	ALIGN          string   `xml:"ALIGN,attr"`
+	OpticalMargins string   `xml:"OpticalMargins,attr"`
 }
 
 type ITEXT struct {
-	XMLName xml.Name `xml:"ITEXT"`
-	Text    string   `xml:",chardata"`
-	CPARENT string   `xml:"CPARENT,attr"`
-	CH      string   `xml:"CH,attr"`
+	XMLName  xml.Name `xml:"ITEXT"`
+	Text     string   `xml:",chardata"`
+	FONT     string   `xml:"FONT,attr"`
+	FONTSIZE string   `xml:"FONTSIZE,attr"`
+	FCOLOR   string   `xml:"FCOLOR,attr"`
+	CPARENT  string   `xml:"CPARENT,attr"`
+	CH       string   `xml:"CH,attr"`
+}
+
+type Trail struct {
+	Text                  string `xml:",chardata"`
+	LINESP                string `xml:"LINESP,attr"`
+	ParagraphEffectOffset string `xml:"ParagraphEffectOffset,attr"`
+	ParagraphEffectIndent string `xml:"ParagraphEffectIndent,attr"`
+	DROP                  string `xml:"DROP,attr"`
+	Bullet                string `xml:"Bullet,attr"`
+	BulletStr             string `xml:"BulletStr,attr"`
+	Numeration            string `xml:"Numeration,attr"`
+	ALIGN                 string `xml:"ALIGN,attr"`
+	OpticalMargins        string `xml:"OpticalMargins,attr"`
 }
 
 // readScribusFile reads an existing Scribus file from path and
@@ -781,6 +913,30 @@ func (doc DOCUMENT) GetPageObjectsWithText(text string) []*PAGEOBJECT {
 	return pos
 }
 
+// GetPageObjectByName returns a pointer to the PAGEOBJECT with the given name
+// (press F2 in Scribus). Scribus makes sure that these names are unique
+func (doc DOCUMENT) GetPageObjectByName(name string) *PAGEOBJECT {
+	var po *PAGEOBJECT
+	for i := range doc.PAGEOBJECT {
+		// TODO: Check whether it has an ANNAME
+		if doc.PAGEOBJECT[i].ANNAME == name {
+			return &doc.PAGEOBJECT[i]
+		}
+	}
+	return po
+}
+
+// GetPageObjectsThatAreType2 returns all images/pictures
+func (doc DOCUMENT) GetPageObjectsThatAreType2() []*PAGEOBJECT {
+	var pos []*PAGEOBJECT
+	for i := range doc.PAGEOBJECT {
+		if doc.PAGEOBJECT[i].PTYPE == "2" {
+			pos = append(pos, &doc.PAGEOBJECT[i])
+		}
+	}
+	return pos
+}
+
 // MovePageObject moves the i'th PAGEOBJECT to the supplied x and y position
 func (po *PAGEOBJECT) MovePageObject(i int, xpos int, ypos int) {
 	po.XPOS = strconv.Itoa(xpos)
@@ -803,7 +959,16 @@ func (st *StoryText) ChangeBulletPoints(texts []string) {
             </StoryText>
             `
 	// Get the first ITEXT and the first Para and use them as templates for the ones we are creating
+
+	if len(st.ITEXT) < 1 {
+		fmt.Println("ChangeBulletPoints: No ITEXT available")
+		return
+	}
 	templateItext := st.ITEXT[0]
+	if len(st.Para) < 1 {
+		fmt.Println("ChangeBulletPoints: No Para available")
+		return
+	}
 	templatePara := st.Para[0]
 
 	// Clear the pre-existing ITEXTs and PARAs
